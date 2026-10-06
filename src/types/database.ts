@@ -247,6 +247,7 @@ export type Database = {
           attempts?: number;
           hints_used?: number;
           xp_earned?: number;
+          completed_at?: string | null;
         };
         Update: Partial<UserProgress>;
       };

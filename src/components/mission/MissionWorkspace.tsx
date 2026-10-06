@@ -1,29 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { RunResult } from "@/types/database";
+
+interface CompleteResult {
+  passed: boolean;
+  xp_gained?: number;
+  bonus_hint_free?: boolean;
+  total_xp?: number;
+  level?: number;
+  leveled_up?: boolean;
+  streak_days?: number;
+  already_completed?: boolean;
+  message?: string;
+}
 
 /**
  * Workspace da missão: editor de código + painel de execução.
- * Um único componente para compartilhar o estado do código limpo.
+ * Quando todos os testes passam, grava o progresso no banco.
  */
 export default function MissionWorkspace({
   missionSlug,
   initialCode,
   hints,
   solutionCode,
+  alreadyCompleted,
+  loggedIn,
 }: {
   missionSlug: string;
   initialCode: string;
   hints: { content: string }[];
   solutionCode: string | null;
+  alreadyCompleted: boolean;
+  loggedIn: boolean;
 }) {
+  const router = useRouter();
   const [code, setCode] = useState(initialCode);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
   const [hintLevel, setHintLevel] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [completion, setCompletion] = useState<CompleteResult | null>(null);
 
   async function handleRun() {
     setRunning(true);
@@ -45,7 +63,10 @@ export default function MissionWorkspace({
         });
       } else {
         setResult(data);
-        if (data.status === "ok") setSuccess(true);
+        if (data.status === "ok") {
+          // passou nos testes → registra progresso no banco
+          await completeMission();
+        }
       }
     } catch {
       setResult({
@@ -57,6 +78,24 @@ export default function MissionWorkspace({
       });
     } finally {
       setRunning(false);
+    }
+  }
+
+  async function completeMission() {
+    if (!loggedIn) return;
+    try {
+      const res = await fetch(`/api/missions/${missionSlug}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, hints_used: hintLevel }),
+      });
+      const data = (await res.json()) as CompleteResult;
+      if (data.passed) {
+        setCompletion(data);
+        router.refresh();
+      }
+    } catch {
+      // progresso é best-effort: a missão já passou nos testes
     }
   }
 
@@ -123,9 +162,41 @@ export default function MissionWorkspace({
                 <p className="text-emerald-400 font-semibold text-sm">
                   🎉 Sucesso! Todos os testes passaram.
                 </p>
-                {success && (
-                  <p className="text-zinc-400 mt-1">
-                    +XP registrado no seu progresso.
+                {completion && (
+                  <div className="mt-2 space-y-1">
+                    {completion.already_completed ? (
+                      <p className="text-zinc-400">
+                        Você já havia concluído esta missão — sem XP extra.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-amber-300">
+                          +{completion.xp_gained} XP
+                          {completion.bonus_hint_free && (
+                            <span className="text-zinc-400">
+                              {" "}
+                              (inclui +20 por não usar dicas)
+                            </span>
+                          )}
+                        </p>
+                        {completion.leveled_up && (
+                          <p className="text-emerald-300 font-semibold">
+                            ⬆️ LEVEL UP! Agora você é nível {completion.level}.
+                          </p>
+                        )}
+                        {completion.streak_days ? (
+                          <p className="text-amber-400/80">
+                            🔥 streak: {completion.streak_days}{" "}
+                            {completion.streak_days === 1 ? "dia" : "dias"}
+                          </p>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                )}
+                {!loggedIn && (
+                  <p className="text-zinc-500 mt-2 text-[11px]">
+                    entre com sua conta para registrar XP nesta missão
                   </p>
                 )}
               </div>

@@ -1,13 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { xpForLevel, levelProgress } from "@/lib/engine/levels";
 import TerminalHeader from "@/components/ui/TerminalHeader";
 import LogoutButton from "@/components/auth/LogoutButton";
-
-/** Nível ⇒ XP total acumulado (curva leve: nível n custa 100×n XP) */
-export function xpForLevel(level: number): number {
-  return (100 * level * (level + 1)) / 2;
-}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -30,9 +26,7 @@ export default async function DashboardPage() {
 
   const currentLevelXp = xpForLevel(level);
   const nextLevelXp = xpForLevel(level + 1);
-  const pct =
-    Math.min(100, Math.max(0, ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100)) ||
-    0;
+  const pct = levelProgress(xp, level);
 
   const { data: worlds } = await supabase
     .from("worlds")

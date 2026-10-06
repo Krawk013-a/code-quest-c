@@ -73,6 +73,18 @@ export default async function MissionPage({
     .single();
   if (!world) notFound();
 
+  // progresso do usuário nesta missão (se logado)
+  let alreadyCompleted = false;
+  if (user) {
+    const { data: progress } = await supabase
+      .from("user_progress")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("mission_id", mission.id)
+      .single();
+    alreadyCompleted = progress?.status === "completed";
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
       <TerminalHeader
@@ -155,9 +167,17 @@ export default async function MissionPage({
               initialCode={mission.initial_code}
               hints={mission.hints}
               solutionCode={mission.solution_code}
+              alreadyCompleted={alreadyCompleted}
+              loggedIn={!!user}
             />
           </div>
         </div>
+
+        {alreadyCompleted && (
+          <p className="mt-6 text-xs text-emerald-400/80">
+            ✓ você já concluiu esta missão
+          </p>
+        )}
       </main>
     </div>
   );
