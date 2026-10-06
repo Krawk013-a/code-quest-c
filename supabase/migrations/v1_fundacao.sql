@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS public.worlds (
   required_missions INTEGER NOT NULL DEFAULT 6,  -- regra de desbloqueio (§13)
   required_boss BOOLEAN NOT NULL DEFAULT true,
   sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ NOT DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (language_id, number)
 );
 
@@ -245,6 +245,22 @@ SELECT l.id, 0, 'mundo-0-primeiros-passos', 'Primeiros Passos',
 FROM public.languages l
 WHERE l.slug = 'c'
 ON CONFLICT (slug) DO NOTHING;
+
+-- ---------- GRANTS ----------
+-- Projetos Supabase novos (2025+) NÃO expõem as APIs por padrão:
+-- mesmo com RLS correto, sem GRANT explícito o PostgREST retorna
+-- "permission denied". (Na fase comercial, UPDATE de XP/nível migra
+-- para RPC SECURITY DEFINER — §20/§22 do Plano Mestre.)
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON public.languages TO anon, authenticated;
+GRANT SELECT ON public.worlds TO anon, authenticated;
+GRANT SELECT ON public.missions TO anon, authenticated;
+GRANT SELECT ON public.badges TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.user_progress TO authenticated;
+GRANT SELECT, INSERT ON public.user_badges TO authenticated;
+GRANT SELECT ON public.subscriptions TO authenticated;
 
 -- ---------- CONFERINDO ----------
 

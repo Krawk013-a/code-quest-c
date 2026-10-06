@@ -16,9 +16,11 @@ Schema completo no PostgreSQL (Supabase) com Row Level Security, pronto para rec
   - `user_progress` (status, tentativas, dicas usadas, XP ganho)
   - `subscriptions` (estrutura futura, §21 — sem uso agora)
   - RLS em todas as tabelas (usuário só acessa as próprias linhas; conteúdo público é read-only)
+  - **GRANTs explícitos** — projetos Supabase 2025+ não expõem APIs sem GRANT
 - [x] Seed: linguagem C + Mundo 0 (Primeiros Passos)
 - [x] Tipos TypeScript espelhando o schema (`src/types/database.ts`)
-- [ ] Client Supabase no frontend (depende das credenciais do Enzo)
+- [x] Client Supabase browser/server + middleware de sessão (publishable key)
+- [x] Migration validada localmente em PostgreSQL 17 real (idempotência 2x, trigger, RLS, grants)
 
 ## Como rodar a migration
 
