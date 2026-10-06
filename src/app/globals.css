@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ── CodeQuest C · design tokens ─────────────────────────────
+   Direção visual (§18): editor de código + terminal + game UI
+   moderna. Escuro, verde-terminal como cor de ação, âmbar para
+   XP/recompensas. Nada infantil, nada fofinho.               */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #09090b;
+  --color-foreground: #e4e4e7;
+  --color-terminal: #10b981;
+  --color-xp: #fbbf24;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace,
+    SFMono-Regular, Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #09090b;
+  --foreground: #e4e4e7;
+  --terminal: #10b981;
+  --xp: #fbbf24;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-mono);
+}
+
+/* seleção de texto no tom do produto */
+::selection {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+/* scrollbar discreta no estilo editor */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── CodeMirror: integração com o tema ─────────────────────── */
+
+.cm-editor {
+  height: 100%;
+  background: transparent;
+}
+.cm-editor .cm-scroller {
+  font-family: var(--font-mono) !important;
+  line-height: 1.65;
+}
+.cm-editor.cm-focused {
+  outline: none;
+}
+.cm-gutters {
+  background: #0c0c0e !important;
+  border-right: 1px solid #1c1c1f !important;
+  color: #3f3f46 !important;
+}
+.cm-activeLine {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+.cm-activeLineGutter {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #a1a1aa !important;
+}
+
+/* ── animações discretas (§18: sem excesso) ────────────────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out both;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 24px 4px rgba(16, 185, 129, 0.15);
+  }
+}
+
+.animate-glow {
+  animation: glow-pulse 2.5s ease-in-out infinite;
 }

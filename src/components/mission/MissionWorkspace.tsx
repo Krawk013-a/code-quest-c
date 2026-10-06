@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import CodeEditor from "@/components/editor/CodeEditor";
 import type { RunResult } from "@/types/database";
 
 interface CompleteResult {
@@ -110,23 +111,29 @@ export default function MissionWorkspace({
           <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
           <span className="h-3 w-3 rounded-full bg-green-500/80" />
           <span className="ml-3 text-xs text-zinc-500">main.c</span>
-        </div>
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          spellCheck={false}
-          className="w-full h-[420px] bg-zinc-950 text-zinc-100 text-sm font-mono p-4 outline-none resize-none leading-relaxed"
-        />
-        <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between">
-          <span className="text-xs text-zinc-600">
+          <span className="ml-auto text-xs text-zinc-600">
             {code.split("\n").length} linhas
           </span>
+        </div>
+        <CodeEditor value={code} onChange={setCode} />
+        <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between gap-3">
+          {running ? (
+            <span className="text-xs text-emerald-400 animate-pulse">
+              compilando e executando no sandbox...
+            </span>
+          ) : (
+            <span className="text-xs text-zinc-600">pronto para executar</span>
+          )}
           <button
             onClick={handleRun}
             disabled={running}
-            className="rounded bg-emerald-500 px-5 py-2 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className={`shrink-0 rounded px-5 py-2 text-sm font-semibold text-zinc-950 transition-all ${
+              running
+                ? "bg-zinc-700 cursor-not-allowed opacity-70"
+                : "bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98]"
+            }`}
           >
-            {running ? "executando..." : "▶ executar"}
+            {running ? "⏳ executando..." : "▶ executar"}
           </button>
         </div>
       </div>
@@ -149,9 +156,9 @@ export default function MissionWorkspace({
 
         {result && (
           <div
-            className={`rounded-lg border px-4 py-4 text-xs leading-relaxed ${
+            className={`animate-fade-up rounded-lg border px-4 py-4 text-xs leading-relaxed ${
               result.status === "ok"
-                ? "border-emerald-500/40 bg-emerald-500/10"
+                ? "border-emerald-500/40 bg-emerald-500/10 animate-glow"
                 : result.status === "error"
                   ? "border-zinc-700 bg-zinc-900"
                   : "border-red-500/30 bg-red-500/5"
