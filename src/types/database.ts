@@ -1,11 +1,14 @@
 // Tipos TypeScript que espelham o schema do Supabase (v1_fundacao.sql)
+// NOTA: Row/Insert/Update usam `type` aliases (não `interface`) —
+// o supabase-js 2.117 exige assignability a Record<string, unknown>,
+// e só type aliases recebem index signature implícita (TS 4.4+).
 
 export type ActivityType = "mission" | "challenge" | "boss" | "project";
 export type Difficulty = "easy" | "medium" | "hard" | "insane";
 export type MissionStatus = "in_progress" | "completed" | "failed";
 
 /** Um teste de missão: roda o código com `input` e compara com `expected_output` */
-export interface MissionTest {
+export type MissionTest = {
   /** stdin que será passado ao programa compilado */
   input: string;
   /** saída esperada (comparação trim/trailing) */
@@ -14,14 +17,14 @@ export interface MissionTest {
   label?: string;
   /** se true, não mostra o input/expected pro usuário */
   hidden?: boolean;
-}
+};
 
 /** Uma dica progressiva (§7 do Plano Mestre) */
-export interface MissionHint {
+export type MissionHint = {
   content: string;
-}
+};
 
-export interface Language {
+export type Language = {
   id: string;
   slug: string;
   name: string;
@@ -29,9 +32,9 @@ export interface Language {
   is_active: boolean;
   sort_order: number;
   created_at: string;
-}
+};
 
-export interface World {
+export type World = {
   id: string;
   language_id: string;
   number: number;
@@ -42,9 +45,9 @@ export interface World {
   required_boss: boolean;
   sort_order: number;
   created_at: string;
-}
+};
 
-export interface Mission {
+export type Mission = {
   id: string;
   world_id: string;
   slug: string;
@@ -63,9 +66,9 @@ export interface Mission {
   sort_order: number;
   is_active: boolean;
   created_at: string;
-}
+};
 
-export interface Profile {
+export type Profile = {
   id: string;
   username: string;
   display_name: string | null;
@@ -76,9 +79,9 @@ export interface Profile {
   last_activity_date: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface UserProgress {
+export type UserProgress = {
   id: string;
   user_id: string;
   mission_id: string;
@@ -89,9 +92,9 @@ export interface UserProgress {
   started_at: string;
   completed_at: string | null;
   updated_at: string;
-}
+};
 
-export interface Badge {
+export type Badge = {
   id: string;
   slug: string;
   title: string;
@@ -99,14 +102,14 @@ export interface Badge {
   icon: string | null;
   criteria: Record<string, unknown>;
   created_at: string;
-}
+};
 
-export interface UserBadge {
+export type UserBadge = {
   id: string;
   user_id: string;
   badge_id: string;
   awarded_at: string;
-}
+};
 
 // ---------- Runner (CodeRunner — §3.2) ----------
 
@@ -118,15 +121,15 @@ export type RunnerStatus =
   | "wrong_answer"     // compilou+rodou, mas saída incorreta
   | "error";           // falha da infraestrutura (rede, sandbox etc.)
 
-export interface TestResult {
+export type TestResult = {
   label: string;
   passed: boolean;
   input?: string;
   expected_output?: string;
   actual_output?: string;
-}
+};
 
-export interface RunResult {
+export type RunResult = {
   status: RunnerStatus;
   /** saída bruta do programa (primeira execução / caso único) */
   stdout: string;
@@ -137,19 +140,20 @@ export interface RunResult {
   tests: TestResult[];
   /** tempo de execução em ms */
   time_ms?: number;
-}
+};
 
 // ---------- Schema Supabase tipado ----------
 
-export interface Json {
+export type Json = {
   [key: string]: unknown;
-}
+};
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: Profile;
+        Relationships: [];
         Insert: {
           id: string;
           username: string;
@@ -164,6 +168,7 @@ export interface Database {
       };
       languages: {
         Row: Language;
+        Relationships: [];
         Insert: {
           slug: string;
           name: string;
@@ -175,6 +180,7 @@ export interface Database {
       };
       worlds: {
         Row: World;
+        Relationships: [];
         Insert: {
           language_id: string;
           number: number;
@@ -189,6 +195,7 @@ export interface Database {
       };
       missions: {
         Row: Mission;
+        Relationships: [];
         Insert: {
           world_id: string;
           slug: string;
@@ -211,6 +218,7 @@ export interface Database {
       };
       badges: {
         Row: Badge;
+        Relationships: [];
         Insert: {
           slug: string;
           title: string;
@@ -222,6 +230,7 @@ export interface Database {
       };
       user_badges: {
         Row: UserBadge;
+        Relationships: [];
         Insert: {
           user_id: string;
           badge_id: string;
@@ -230,6 +239,7 @@ export interface Database {
       };
       user_progress: {
         Row: UserProgress;
+        Relationships: [];
         Insert: {
           user_id: string;
           mission_id: string;
@@ -252,6 +262,7 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
+        Relationships: [];
         Insert: {
           user_id: string;
           plan?: string;
@@ -269,5 +280,12 @@ export interface Database {
         };
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: {
+      activity_type: ActivityType;
+      difficulty: Difficulty;
+    };
+    CompositeTypes: Record<string, never>;
   };
-}
+};
