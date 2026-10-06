@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import CodeEditor from "@/components/editor/CodeEditor";
 import DosButton from "@/components/ui/DosButton";
 import DosAlert from "@/components/ui/DosAlert";
@@ -32,6 +33,8 @@ export default function MissionWorkspace({
   solutionCode,
   alreadyCompleted,
   loggedIn,
+  nextMissionSlug,
+  worldSlug,
 }: {
   missionSlug: string;
   initialCode: string;
@@ -39,6 +42,8 @@ export default function MissionWorkspace({
   solutionCode: string | null;
   alreadyCompleted: boolean;
   loggedIn: boolean;
+  nextMissionSlug: string | null;
+  worldSlug: string;
 }) {
   const router = useRouter();
   const [code, setCode] = useState(initialCode);
@@ -238,8 +243,32 @@ export default function MissionWorkspace({
           {result.status === "ok" && (
             <DosAlert kind="success" title="COMPILADO COM SUCESSO">
               <p>TODOS OS TESTES PASSARAM.</p>
+
+              {/* saída do programa — o resultado de verdade */}
+              {result.stdout && (
+                <div className="mt-3">
+                  <p className="mb-1 text-[11px] text-white/60">
+                    SAIDA DO SEU PROGRAMA:
+                  </p>
+                  <pre className="overflow-x-auto border border-dos-green/50 bg-black p-3 text-xs text-dos-green">
+                    {result.stdout}
+                  </pre>
+                </div>
+              )}
+
+              {/* testes extras com output visível (não-hidden) */}
+              {result.tests
+                .filter((t) => t.passed && t.expected_output !== undefined)
+                .slice(1)
+                .map((t, i) => (
+                  <div key={i} className="mt-2 text-xs">
+                    <span className="text-white/60">[{t.label}]</span>{" "}
+                    <span className="text-dos-green">OK</span>
+                  </div>
+                ))}
+
               {completion && (
-                <div className="mt-2 space-y-1">
+                <div className="mt-3 space-y-1">
                   {completion.already_completed ? (
                     <p className="text-white/70">
                       MISSAO JA CONCLUIDA ANTERIORMENTE — SEM XP EXTRA.
@@ -270,6 +299,31 @@ export default function MissionWorkspace({
                   ENTRE COM SUA CONTA PARA REGISTRAR XP NESTA MISSAO
                 </p>
               )}
+
+              {/* próxima missão — manter o fluxo */}
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-dos-green/30 pt-3">
+                {nextMissionSlug ? (
+                  <Link
+                    href={`/missoes/${nextMissionSlug}`}
+                    className="border-2 border-dos-green px-4 py-1.5 text-sm text-dos-green hover:bg-dos-green hover:text-black transition-colors"
+                  >
+                    [ Proxima Missao → ]
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/mundos/${worldSlug}`}
+                    className="border-2 border-dos-yellow px-4 py-1.5 text-sm text-dos-yellow hover:bg-dos-yellow hover:text-black transition-colors"
+                  >
+                    [ Fim do mundo — ver mapa do mundo ]
+                  </Link>
+                )}
+                <Link
+                  href="/dashboard"
+                  className="text-xs text-white/60 hover:text-white transition-colors"
+                >
+                  [ voltar ao mapa ]
+                </Link>
+              </div>
             </DosAlert>
           )}
 

@@ -88,6 +88,20 @@ export default async function MissionPage({
     alreadyCompleted = progress?.status === "completed";
   }
 
+  // próxima missão do mesmo mundo (ordem de sort_order) — null se for a última
+  const { data: worldMissions } = await supabase
+    .from("missions")
+    .select("id, slug, sort_order")
+    .eq("world_id", mission.world_id)
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const idx = worldMissions?.findIndex((m) => m.id === mission.id) ?? -1;
+  const nextMissionSlug =
+    idx >= 0 && worldMissions && idx < worldMissions.length - 1
+      ? worldMissions[idx + 1].slug
+      : null;
+
   return (
     <div className="min-h-screen bg-dos-blue text-white">
       <TerminalHeader
@@ -177,6 +191,8 @@ export default async function MissionPage({
               solutionCode={mission.solution_code}
               alreadyCompleted={alreadyCompleted}
               loggedIn={!!user}
+              nextMissionSlug={nextMissionSlug}
+              worldSlug={world.slug}
             />
           </div>
         </div>
