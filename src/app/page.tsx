@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const features = [
   {
     key: "missoes",
@@ -37,9 +39,20 @@ export default function Home() {
       <header className="border-b-2 border-white bg-dos-panel">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
           <span className="text-sm tracking-widest text-dos-cyan">CODEQUEST</span>
-          <span className="text-xs text-dos-yellow">
-            MUNDO 0 . AGUARDANDO INICIALIZACAO...
-          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
+            >
+              [ mapa ]
+            </Link>
+            <Link
+              href="/login"
+              className="text-xs text-dos-yellow border-2 border-dos-yellow px-3 py-1 hover:bg-dos-yellow hover:text-dos-blue transition-colors"
+            >
+              [ entrar ]
+            </Link>
+          </div>
         </div>
       </header>
 
