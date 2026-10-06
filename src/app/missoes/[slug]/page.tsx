@@ -108,7 +108,7 @@ export default async function MissionPage({
         }
       />
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-8">
         {/* cabeçalho da missão */}
         <p className="text-xs text-zinc-500 mb-2">
           mundo {world.number} · {activityIcon(mission.activity)}{" "}
@@ -119,13 +119,13 @@ export default async function MissionPage({
               : mission.activity === "boss"
                 ? "BOSS"
                 : "projeto"}{" "}
-          · {mission.xp_reward} XP
+          · <span className="text-amber-300">{mission.xp_reward} XP</span>
         </p>
         <h1 className="text-2xl font-bold mb-6">{mission.title}</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* CONTEXTO + OBJETIVO + EXPLICAÇÃO */}
-          <div className="space-y-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-6">
+          {/* CONTEXTO + OBJETIVO + EXPLICAÇÃO — coluna compacta */}
+          <div className="space-y-5 xl:max-h-[calc(100vh-220px)] xl:overflow-y-auto xl:pr-1">
             {mission.context_text && (
               <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
                 <SimpleMarkdown text={mission.context_text} />
@@ -136,7 +136,9 @@ export default async function MissionPage({
               <p className="text-xs text-emerald-400 mb-2 font-semibold">
                 🎯 objetivo
               </p>
-              <p className="text-sm text-zinc-200">{mission.objective_text}</p>
+              <p className="text-sm text-zinc-200 whitespace-pre-line">
+                {mission.objective_text}
+              </p>
             </section>
 
             {mission.explanation_md && (
@@ -160,8 +162,8 @@ export default async function MissionPage({
             )}
           </div>
 
-          {/* WORKSPACE: editor + execução */}
-          <div className="lg:col-span-1">
+          {/* WORKSPACE: editor + execução — coluna principal */}
+          <div className="min-w-0">
             <MissionWorkspace
               missionSlug={mission.slug}
               initialCode={mission.initial_code}

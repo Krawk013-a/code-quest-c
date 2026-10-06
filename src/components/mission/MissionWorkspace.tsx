@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CodeEditor from "@/components/editor/CodeEditor";
 import type { RunResult } from "@/types/database";
@@ -43,6 +43,39 @@ export default function MissionWorkspace({
   const [hintLevel, setHintLevel] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [completion, setCompletion] = useState<CompleteResult | null>(null);
+
+  // ── editor modular: altura ajustável e persistida ──────────
+  const MIN_H = 200;
+  const MAX_H = 900;
+  const clampH = (h: number) => Math.min(MAX_H, Math.max(MIN_H, h));
+  const [editorHeight, setEditorHeight] = useState(480);
+
+  // restaura preferência salva (client-only)
+  useEffect(() => {
+    const saved = window.localStorage.getItem("cq-editor-height");
+    if (saved) setEditorHeight(clampH(parseInt(saved, 10) || 480));
+  }, []);
+
+  // persiste a cada mudança
+  useEffect(() => {
+    window.localStorage.setItem("cq-editor-height", String(editorHeight));
+  }, [editorHeight]);
+
+  // arrastar a borda inferior redimensiona
+  function startDrag(e: React.MouseEvent) {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = editorHeight;
+    const onMove = (ev: MouseEvent) => {
+      setEditorHeight(clampH(startH + (ev.clientY - startY)));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }
 
   async function handleRun() {
     setRunning(true);
@@ -105,7 +138,7 @@ export default function MissionWorkspace({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* EDITOR */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
+      <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden flex flex-col">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
           <span className="h-3 w-3 rounded-full bg-red-500/80" />
           <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
@@ -114,8 +147,35 @@ export default function MissionWorkspace({
           <span className="ml-auto text-xs text-zinc-600">
             {code.split("\n").length} linhas
           </span>
+          {/* controles de altura */}
+          <div className="ml-3 flex items-center gap-1">
+            <button
+              title="diminuir editor"
+              onClick={() => setEditorHeight(clampH(editorHeight - 100))}
+              className="h-6 w-6 rounded border border-zinc-700 text-zinc-400 text-xs hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
+            >
+              −
+            </button>
+            <button
+              title="aumentar editor"
+              onClick={() => setEditorHeight(clampH(editorHeight + 100))}
+              className="h-6 w-6 rounded border border-zinc-700 text-zinc-400 text-xs hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
+            >
+              +
+            </button>
+          </div>
         </div>
-        <CodeEditor value={code} onChange={setCode} />
+        <div style={{ height: editorHeight }} className="overflow-hidden">
+          <CodeEditor value={code} onChange={setCode} height={`${editorHeight}px`} />
+        </div>
+        {/* alça de redimensionamento */}
+        <div
+          onMouseDown={startDrag}
+          className="group flex items-center justify-center h-4 cursor-row-resize border-t border-zinc-800 select-none"
+          title="arraste para redimensionar"
+        >
+          <div className="h-0.5 w-10 rounded bg-zinc-700 group-hover:bg-emerald-500 transition-colors" />
+        </div>
         <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between gap-3">
           {running ? (
             <span className="text-xs text-emerald-400 animate-pulse">
