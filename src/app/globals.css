@@ -1,107 +1,108 @@
 @import "tailwindcss";
 
-/* ── CodeQuest C · design tokens ─────────────────────────────
-   Direção visual (§18): editor de código + terminal + game UI
-   moderna. Escuro, verde-terminal como cor de ação, âmbar para
-   XP/recompensas. Nada infantil, nada fofinho.               */
+/* ═══════════════════════════════════════════════════════════════
+   CodeQuest — Design System "Turbo C / Borland IDE" (DOS, anos 90)
+   Regra de ouro: sem cantos arredondados, sem sombra suave,
+   sem gradiente. Cores sólidas, bordas retas e duplas.
+   ═══════════════════════════════════════════════════════════════ */
 
 @theme inline {
-  --color-background: #09090b;
-  --color-foreground: #e4e4e7;
-  --color-terminal: #10b981;
-  --color-xp: #fbbf24;
-  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace,
-    SFMono-Regular, Menlo, monospace;
+  /* paleta Turbo C — tokens centralizados (gera bg-dos-blue etc.) */
+  --color-dos-blue: #0000aa; /* fundo principal */
+  --color-dos-panel: #000080; /* painéis/janelas internas */
+  --color-dos-cyan: #00ffff; /* destaques, títulos, links */
+  --color-dos-green: #00ff00; /* sucesso, testes ok, xp */
+  --color-dos-red: #ff5555; /* erros */
+  --color-dos-yellow: #ffff00; /* avisos, dicas, streak */
+  --font-mono: "JetBrains Mono", "Fira Code", "Courier New",
+    ui-monospace, monospace;
 }
 
 :root {
-  --background: #09090b;
-  --foreground: #e4e4e7;
-  --terminal: #10b981;
-  --xp: #fbbf24;
+  --bg-primary: #0000aa;
+  --bg-panel: #000080;
+  --text-primary: #ffffff;
+  --text-accent: #00ffff;
+  --accent-success: #00ff00;
+  --accent-error: #ff5555;
+  --accent-warning: #ffff00;
+  --border: #ffffff;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: var(--font-mono);
 }
 
-/* seleção de texto no tom do produto */
+/* seleção invertida, como num terminal de verdade */
 ::selection {
-  background: rgba(16, 185, 129, 0.25);
+  background: #ffff00;
+  color: #0000aa;
 }
 
-/* scrollbar discreta no estilo editor */
+/* scrollbar sóbria, estilo editor DOS */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #27272a transparent;
+  scrollbar-color: #ffffff40 transparent;
 }
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
+  background: #ffffff40;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* ── CodeMirror: integração com o tema ─────────────────────── */
+/* ── CodeMirror: editor preto, texto claro ─────────────────────── */
 
 .cm-editor {
   height: 100%;
-  background: transparent;
+  background: #000000;
 }
 .cm-editor .cm-scroller {
   font-family: var(--font-mono) !important;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 .cm-editor.cm-focused {
   outline: none;
 }
+.cm-editor .cm-cursor {
+  border-left: 2px solid #00ff00;
+}
 .cm-gutters {
-  background: #0c0c0e !important;
-  border-right: 1px solid #1c1c1f !important;
-  color: #3f3f46 !important;
+  background: #000000 !important;
+  border-right: 1px solid #ffffff30 !important;
+  color: #808080 !important;
 }
 .cm-activeLine {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: #ffffff14 !important;
 }
 .cm-activeLineGutter {
-  background: rgba(255, 255, 255, 0.03) !important;
-  color: #a1a1aa !important;
+  background: #ffffff14 !important;
+  color: #ffffff !important;
+}
+.cm-selectionBackground,
+.cm-editor ::selection {
+  background: #00ffff40 !important;
 }
 
-/* ── animações discretas (§18: sem excesso) ────────────────── */
+/* ── animações: só o cursor piscando (permitido pelo tema) ────── */
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.35s ease-out both;
-}
-
-@keyframes glow-pulse {
+@keyframes dos-blink {
   0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  49% {
+    opacity: 1;
   }
-  50% {
-    box-shadow: 0 0 24px 4px rgba(16, 185, 129, 0.15);
+  50%,
+  100% {
+    opacity: 0;
   }
 }
 
-.animate-glow {
-  animation: glow-pulse 2.5s ease-in-out infinite;
+.dos-blink {
+  animation: dos-blink 1s steps(1) infinite;
 }

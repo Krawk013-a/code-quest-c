@@ -3,7 +3,16 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TerminalHeader from "@/components/ui/TerminalHeader";
 import LogoutButton from "@/components/auth/LogoutButton";
-import { activityIcon } from "@/components/mission/icons";
+import DosWindow from "@/components/ui/DosWindow";
+import DosBar from "@/components/ui/DosBar";
+
+/** Mapa de tipo de atividade para o estilo DOS */
+const ACTIVITY_TAG: Record<string, { label: string; color: string }> = {
+  mission: { label: "MISSAO", color: "text-dos-green" },
+  challenge: { label: "DESAFIO", color: "text-dos-cyan" },
+  boss: { label: "BOSS", color: "text-dos-red" },
+  project: { label: "PROJETO", color: "text-dos-yellow" },
+};
 
 export default async function WorldPage({
   params,
@@ -33,7 +42,6 @@ export default async function WorldPage({
     .eq("is_active", true)
     .order("sort_order");
 
-  // progresso do usuário nas missões deste mundo (se logado)
   let progressByMission: Record<string, { status: string; xp_earned: number }> = {};
   if (user) {
     const { data: progress } = await supabase
@@ -55,22 +63,24 @@ export default async function WorldPage({
     ).length ?? 0;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
+    <div className="min-h-screen bg-dos-blue text-white">
       <TerminalHeader
         right={
           <>
             <Link
               href="/dashboard"
-              className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors"
+              className="text-xs text-dos-cyan hover:text-white transition-colors"
             >
-              ← mapa
+              [ mapa ]
             </Link>
-            {user ? <LogoutButton /> : (
+            {user ? (
+              <LogoutButton />
+            ) : (
               <Link
                 href="/login"
-                className="text-xs border border-emerald-500/40 text-emerald-400 rounded px-3 py-1.5 hover:bg-emerald-500/10 transition-colors"
+                className="text-xs text-dos-yellow border-2 border-dos-yellow px-3 py-1 hover:bg-dos-yellow hover:text-dos-blue transition-colors"
               >
-                entrar
+                [ entrar ]
               </Link>
             )}
           </>
@@ -78,98 +88,65 @@ export default async function WorldPage({
       />
 
       <main className="mx-auto max-w-5xl px-6 py-10">
-        {/* cabeçalho do mundo com progresso */}
-        <div className="mb-8 rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 animate-fade-up">
-          <p className="text-xs text-zinc-500 mb-2">
-            mundo {world.number} · {missions?.length ?? 0} atividades
-          </p>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            🌎 {world.title}
-            {user && completedCount === totalMissions && totalMissions > 0 && (
-              <span className="text-sm text-emerald-400">🏆 mundo completo</span>
-            )}
-          </h1>
-          <p className="text-sm text-zinc-400 mt-2 max-w-xl leading-relaxed">
-            {world.description}
-          </p>
+        <DosWindow
+          title={`MUNDO ${world.number} — ${world.title.toUpperCase()}`}
+          className="mb-8"
+        >
+          <p className="text-sm mb-3">{world.description}</p>
           {user && totalMissions > 0 && (
-            <div className="mt-4 max-w-md">
-              <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1">
-                <span>
-                  {completedCount}/{totalMissions} concluídas
-                </span>
-                <span>
-                  desbloqueia o próximo mundo: {world.required_missions} +
-                  boss
-                </span>
-              </div>
-              <div className="h-1.5 rounded bg-zinc-800 overflow-hidden">
-                <div
-                  className="h-full bg-emerald-500 rounded transition-all duration-500"
-                  style={{
-                    width: `${(completedCount / totalMissions) * 100}%`,
-                  }}
-                />
-              </div>
+            <div className="text-xs">
+              <p className="mb-1 text-white/70">
+                PROGRESSO: {completedCount}/{totalMissions} — desbloqueia o
+                proximo mundo com {world.required_missions} missoes
+                {world.required_boss ? " + boss" : ""}
+              </p>
+              <DosBar
+                value={completedCount}
+                max={totalMissions}
+                width={20}
+                tone={completedCount === totalMissions ? "green" : "cyan"}
+              />
             </div>
           )}
-        </div>
+        </DosWindow>
 
         <div className="space-y-3">
           {(missions ?? []).map((m) => {
             const prog = progressByMission[m.id];
             const done = prog?.status === "completed";
-            const isBoss = m.activity === "boss";
+            const tag = ACTIVITY_TAG[m.activity] ?? ACTIVITY_TAG.mission;
             return (
               <Link
                 key={m.id}
                 href={`/missoes/${m.slug}`}
-                className={`flex items-center justify-between rounded-xl border px-5 py-4 transition-all ${
-                  isBoss
-                    ? "border-red-500/30 bg-red-500/5 hover:border-red-500/50"
+                className={`flex items-center justify-between border-2 px-4 py-3 transition-colors ${
+                  m.activity === "boss"
+                    ? "border-dos-red hover:bg-dos-red/20"
                     : done
-                      ? "border-emerald-500/30 bg-emerald-500/5"
-                      : "border-zinc-800 bg-zinc-900/60 hover:border-emerald-500/40"
+                      ? "border-dos-green"
+                      : "border-white hover:bg-dos-panel"
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <span className={`text-lg ${isBoss ? "animate-pulse" : ""}`}>
-                    {isBoss ? "👾" : activityIcon(m.activity)}
-                  </span>
-                  <div>
-                    <h2
-                      className={`text-sm font-semibold ${
-                        isBoss ? "text-red-300" : ""
-                      }`}
-                    >
-                      {m.title}
-                    </h2>
-                    <p
-                      className={`text-xs mt-0.5 ${
-                        done ? "text-emerald-400" : "text-zinc-500"
-                      }`}
-                    >
-                      {done
-                        ? "✓ concluída"
-                        : `${m.xp_reward} XP${isBoss ? " · derrota o boss" : ""}`}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs ${tag.color}`}>[{tag.label}]</span>
+                  <span className="text-sm">{m.title}</span>
                 </div>
-                <span className="text-xs text-zinc-500">
-                  {done ? "🎉" : "→"}
+                <span
+                  className={`text-xs ${done ? "text-dos-green" : "text-dos-yellow"}`}
+                >
+                  {done ? "[CONCLUIDA]" : `+${m.xp_reward} XP`}
                 </span>
               </Link>
             );
           })}
 
           {(missions ?? []).length === 0 && (
-            <div className="rounded-lg border border-dashed border-zinc-800 px-5 py-10 text-center">
-              <p className="text-sm text-zinc-400">
-                Nenhuma missão neste mundo ainda.
+            <div className="border-2 border-white/40 px-5 py-10 text-center">
+              <p className="text-sm text-white/60">
+                Nenhuma missao neste mundo ainda.
               </p>
-              <p className="text-xs text-zinc-600 mt-1">
-                As primeiras missões chegam na Fase 3 do roadmap (primeira
-                missão de verdade no banco).
+              <p className="text-xs text-white/40 mt-1">
+                AS PRIMEIRAS MISSOES CHEGAM NAS PROXIMAS MIGRATIONS.
               </p>
             </div>
           )}

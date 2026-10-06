@@ -8,42 +8,42 @@ import { tags as t } from "@lezer/highlight";
 
 /**
  * Tema CodeQuest — dark + verde terminal.
- * Combina com o design system (zinc-950/emerald-500) do app.
+ * Combina com o design system DOS (bg preto, texto verde/ciano) do app.
  */
 
 const codequestTheme = EditorView.theme(
   {
     "&": {
-      backgroundColor: "#09090b",
-      color: "#e4e4e7",
+      backgroundColor: "#000000",
+      color: "#00ff00",
       fontSize: "13.5px",
     },
     ".cm-content": {
-      caretColor: "#10b981",
+      caretColor: "#00ff00",
       padding: "12px 0",
     },
     "&.cm-focused .cm-cursor": {
-      borderLeftColor: "#10b981",
+      borderLeftColor: "#00ff00",
     },
     ".cm-selectionBackground, ::selection": {
-      backgroundColor: "rgba(16, 185, 129, 0.18) !important",
+      backgroundColor: "rgba(0, 255, 255, 0.25) !important",
     },
   },
   { dark: true }
 );
 
 const codequestHighlight = HighlightStyle.define([
-  { tag: t.comment, color: "#52525b", fontStyle: "italic" },
-  { tag: [t.keyword, t.modifier], color: "#f472b6" },
-  { tag: [t.string, t.special(t.string)], color: "#fbbf24" },
-  { tag: t.number, color: "#a78bfa" },
-  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#10b981" },
-  { tag: t.typeName, color: "#38bdf8" },
-  { tag: [t.operator, t.punctuation], color: "#a1a1aa" },
-  { tag: t.variableName, color: "#e4e4e7" },
-  { tag: t.propertyName, color: "#38bdf8" },
-  { tag: [t.bool, t.null], color: "#a78bfa" },
-  { tag: t.meta, color: "#fb923c" },
+  { tag: t.comment, color: "#808080" },
+  { tag: [t.keyword, t.modifier], color: "#ffff55" },
+  { tag: [t.string, t.special(t.string)], color: "#00ffff" },
+  { tag: t.number, color: "#ff5555" },
+  { tag: [t.function(t.variableName), t.function(t.propertyName)], color: "#ffffff" },
+  { tag: t.typeName, color: "#00ffff" },
+  { tag: [t.operator, t.punctuation], color: "#ffffff" },
+  { tag: t.variableName, color: "#00ff00" },
+  { tag: t.propertyName, color: "#00ffff" },
+  { tag: [t.bool, t.null], color: "#ff5555" },
+  { tag: t.meta, color: "#ff55ff" },
 ]);
 
 export default function CodeEditor({

@@ -1,118 +1,108 @@
 const features = [
   {
-    icon: "🟢",
-    title: "Missões com contexto",
-    text: "Não é lista de exercício: é um problema de verdade para você resolver.",
+    key: "missoes",
+    title: "MISSOES COM CONTEXTO",
+    text: "Nao e lista de exercicio: e um problema de verdade para voce resolver.",
   },
   {
-    icon: "⚡",
-    title: "Execução real de código",
-    text: "Seu C é compilado e executado de verdade, com testes automáticos.",
+    key: "execucao",
+    title: "EXECUCAO REAL DE CODIGO",
+    text: "Seu C e compilado e executado de verdade, com testes automaticos.",
   },
   {
-    icon: "💡",
-    title: "Dicas progressivas",
-    text: "Errou? O sistema te guia aos poucos — sem entregar a resposta de graça.",
+    key: "dicas",
+    title: "DICAS PROGRESSIVAS",
+    text: "Errou? O sistema te guia aos poucos — sem entregar a resposta de graca.",
   },
   {
-    icon: "🧠",
-    title: "Domínio por conceito",
-    text: "Acompanhe sua evolução real em cada conceito de C.",
+    key: "dominio",
+    title: "DOMINIO POR CONCEITO",
+    text: "Acompanhe sua evolucao real em cada conceito de C.",
   },
   {
-    icon: "👾",
-    title: "Bosses e desafios",
+    key: "bosses",
+    title: "BOSSES E DESAFIOS",
     text: "No fim de cada mundo, misture tudo o que aprendeu num desafio maior.",
   },
   {
-    icon: "🧪",
-    title: "Laboratório aberto",
-    text: "Quer testar uma ideia? Abra o main.c e programe sem pressão.",
+    key: "lab",
+    title: "LABORATORIO ABERTO",
+    text: "Quer testar uma ideia? Abra o main.c e programe sem pressao.",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
-      {/* terminal-style top bar */}
-      <header className="border-b border-zinc-800">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-emerald-400">$</span>
-            <span className="text-sm tracking-wide">
-              codequest<span className="text-zinc-500">--c</span>
-            </span>
-          </div>
-          <div className="text-xs text-zinc-500 hidden sm:block">
-            mundo 0 {'>'} aguardando inicialização...
-          </div>
+    <div className="min-h-screen bg-dos-blue text-white">
+      <header className="border-b-2 border-white bg-dos-panel">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
+          <span className="text-sm tracking-widest text-dos-cyan">CODEQUEST</span>
+          <span className="text-xs text-dos-yellow">
+            MUNDO 0 . AGUARDANDO INICIALIZACAO...
+          </span>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6">
-        {/* hero */}
-        <section className="py-20 sm:py-28">
-          <p className="text-xs text-zinc-500 mb-4">
-            <span className="text-emerald-400">enzo@codequest</span>:~/primeiros-passos$
-          </p>
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-            Aprenda C
-            <br />
-            <span className="text-emerald-400">programando de verdade.</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-sm sm:text-base text-zinc-400 leading-relaxed">
-            Não é um curso. É um jogo no qual programar é a maneira de avançar:
-            aprenda, tente, erre, descubra, corrija, domine.
-          </p>
+      <main className="mx-auto max-w-3xl px-6 py-16">
+        <pre className="text-dos-cyan text-xs leading-tight mb-8 select-none">
+{`  ____           _       _          _   _____
+ / ___|__ _ _ __| | ____| |___  ___| |_/ /   \\_ _ _ __
+| |   / _\` | '__| |/ / _\` / __|/ _ \\ / / / /\\ / _\` | '__|
+| |__| (_| | |  |   < (_| \\__ \\  __/ /\\ \\/ / /_  (_| | |
+ \\____\\__,_|_|  |_|\\_\\__,_|___/\\___|\\_\\/\\_\\ /_/\\__,_|_|
+                 C  .  TURBO  EDITION`}
+        </pre>
 
-          {/* fake terminal window */}
-          <div className="mt-10 rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
-              <span className="h-3 w-3 rounded-full bg-red-500/80" />
-              <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-              <span className="h-3 w-3 rounded-full bg-green-500/80" />
-              <span className="ml-3 text-xs text-zinc-500">main.c — mundo 0</span>
-            </div>
-            <pre className="p-4 text-xs sm:text-sm overflow-x-auto text-zinc-300">
-              <code>{`#include <stdio.h>
+        <p className="text-lg leading-relaxed mb-3">
+          Aprenda C <span className="text-dos-yellow">programando de verdade</span>.
+        </p>
+        <p className="text-sm text-white/80 mb-10">
+          Nao e um curso. E um jogo no qual programar e a maneira de avancar:
+          aprenda, tente, erre, descubra, corrija, domine.
+        </p>
+
+        <div className="space-y-2 mb-10">
+          <div className="border-2 border-white p-1">
+            <div className="border border-white bg-black p-4 text-dos-green text-xs">
+              <pre className="whitespace-pre-wrap">{`#include <stdio.h>
 
 int main() {
-    printf("olá, mundo 0!\\n");
+    printf("ola, mundo 0!\\n");
 
-    // missão 1 aguardando deploy...
+    /* missao 1 aguardando... */
     return 0;
-}`}</code>
-            </pre>
+}`}</pre>
+            </div>
           </div>
-        </section>
+          <p className="text-xs text-white/60 text-center">
+            MAIN.C — pressione qualquer tecla para continuar
+          </p>
+        </div>
 
-        {/* features grid */}
-        <section className="pb-20">
-          <h2 className="text-sm text-zinc-500 mb-6">
-            // o que te espera nas próximas fases
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <section>
+          <p className="text-dos-cyan text-xs mb-4">
+            // O QUE TE ESPERA NAS PROXIMAS FASES
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {features.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-lg border border-zinc-800 bg-zinc-900 p-5 hover:border-emerald-500/40 transition-colors"
-              >
-                <div className="text-xl mb-2">{f.icon}</div>
-                <h3 className="text-sm font-semibold mb-1">{f.title}</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">{f.text}</p>
+              <div key={f.key} className="border-2 border-white p-4">
+                <h3 className="text-dos-yellow text-xs tracking-widest mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-xs text-white/85 leading-relaxed">{f.text}</p>
               </div>
             ))}
           </div>
         </section>
+
+        <p className="mt-12 text-center text-xs text-dos-cyan dos-blink">
+          PRONTO? APERTE [ INICIAR ] NO LOGIN
+        </p>
       </main>
 
-      <footer className="border-t border-zinc-800">
-        <div className="mx-auto max-w-5xl px-6 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-zinc-500">
-          <span>
-            <span className="text-emerald-400">$</span> echo "primeiro: aprender.
-            depois: construir." && exit 0
-          </span>
-          <span>CodeQuest C — MIT</span>
+      <footer className="border-t-2 border-white bg-dos-panel">
+        <div className="mx-auto max-w-7xl px-4 py-2 text-center text-xs text-white/70">
+          CODEQUEST C — MIT — PRIMEIRO: APRENDER. DEPOIS: CONSTRUIR.
         </div>
       </footer>
     </div>

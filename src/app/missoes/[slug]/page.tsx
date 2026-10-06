@@ -3,8 +3,15 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TerminalHeader from "@/components/ui/TerminalHeader";
 import LogoutButton from "@/components/auth/LogoutButton";
+import DosWindow from "@/components/ui/DosWindow";
 import MissionWorkspace from "@/components/mission/MissionWorkspace";
-import { activityIcon } from "@/components/mission/icons";
+
+const ACTIVITY_LABEL: Record<string, string> = {
+  mission: "MISSAO",
+  challenge: "DESAFIO",
+  boss: "BOSS",
+  project: "PROJETO",
+};
 
 /** Renderiza markdown mínimo: **negrito**, `código`, quebras de linha */
 function SimpleMarkdown({ text }: { text: string }) {
@@ -14,21 +21,18 @@ function SimpleMarkdown({ text }: { text: string }) {
       {lines.map((line, i) => {
         const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
         return (
-          <p key={i} className="text-xs text-zinc-300 leading-relaxed">
+          <p key={i} className="text-xs text-white/90 leading-relaxed">
             {parts.map((part, j) => {
               if (part.startsWith("**") && part.endsWith("**")) {
                 return (
-                  <strong key={j} className="text-zinc-100 font-semibold">
+                  <strong key={j} className="text-dos-yellow">
                     {part.slice(2, -2)}
                   </strong>
                 );
               }
               if (part.startsWith("`") && part.endsWith("`")) {
                 return (
-                  <code
-                    key={j}
-                    className="rounded bg-zinc-800 px-1.5 py-0.5 text-emerald-300 text-[11px]"
-                  >
+                  <code key={j} className="text-dos-green bg-black px-1">
                     {part.slice(1, -1)}
                   </code>
                 );
@@ -73,7 +77,6 @@ export default async function MissionPage({
     .single();
   if (!world) notFound();
 
-  // progresso do usuário nesta missão (se logado)
   let alreadyCompleted = false;
   if (user) {
     const { data: progress } = await supabase
@@ -86,66 +89,69 @@ export default async function MissionPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
+    <div className="min-h-screen bg-dos-blue text-white">
       <TerminalHeader
         right={
           <>
             <Link
               href={`/mundos/${world.slug}`}
-              className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors"
+              className="text-xs text-dos-cyan hover:text-white transition-colors"
             >
-              ← {world.title}
+              [ {world.title} ]
             </Link>
-            {user ? <LogoutButton /> : (
+            {user ? (
+              <LogoutButton />
+            ) : (
               <Link
                 href="/login"
-                className="text-xs border border-emerald-500/40 text-emerald-400 rounded px-3 py-1.5 hover:bg-emerald-500/10 transition-colors"
+                className="text-xs text-dos-yellow border-2 border-dos-yellow px-3 py-1 hover:bg-dos-yellow hover:text-dos-blue transition-colors"
               >
-                entrar
+                [ entrar ]
               </Link>
             )}
           </>
         }
+        status={
+          <span>
+            <span className={mission.activity === "boss" ? "text-dos-red" : "text-dos-cyan"}>
+              {ACTIVITY_LABEL[mission.activity] ?? "MISSAO"}
+            </span>
+            <span className="mx-2 text-white/40">|</span>
+            <span className="text-dos-yellow">+{mission.xp_reward} XP</span>
+            {alreadyCompleted && (
+              <>
+                <span className="mx-2 text-white/40">|</span>
+                <span className="text-dos-green">CONCLUIDA</span>
+              </>
+            )}
+          </span>
+        }
       />
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        {/* cabeçalho da missão */}
-        <p className="text-xs text-zinc-500 mb-2">
-          mundo {world.number} · {activityIcon(mission.activity)}{" "}
-          {mission.activity === "mission"
-            ? "missão"
-            : mission.activity === "challenge"
-              ? "desafio"
-              : mission.activity === "boss"
-                ? "BOSS"
-                : "projeto"}{" "}
-          · <span className="text-amber-300">{mission.xp_reward} XP</span>
-        </p>
-        <h1 className="text-2xl font-bold mb-6">{mission.title}</h1>
+        <h1 className="mb-6 text-lg uppercase tracking-widest">
+          {mission.title}
+        </h1>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-6">
-          {/* CONTEXTO + OBJETIVO + EXPLICAÇÃO — coluna compacta */}
-          <div className="space-y-5 xl:max-h-[calc(100vh-220px)] xl:overflow-y-auto xl:pr-1">
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+          {/* contexto + objetivo + explicação */}
+          <div className="space-y-6 xl:max-h-[calc(100vh-220px)] xl:overflow-y-auto xl:pr-1">
             {mission.context_text && (
-              <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
+              <DosWindow title="CONTEXTO">
                 <SimpleMarkdown text={mission.context_text} />
-              </section>
+              </DosWindow>
             )}
 
-            <section className="rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-5">
-              <p className="text-xs text-emerald-400 mb-2 font-semibold">
-                🎯 objetivo
-              </p>
-              <p className="text-sm text-zinc-200 whitespace-pre-line">
+            <DosWindow title="OBJETIVO" className="border-dos-cyan">
+              <p className="text-sm text-dos-green whitespace-pre-line">
                 {mission.objective_text}
               </p>
-            </section>
+            </DosWindow>
 
             {mission.explanation_md && (
-              <section className="rounded-lg border border-zinc-800 bg-zinc-900 p-5">
-                <p className="text-xs text-zinc-500 mb-3">// o que você precisa saber</p>
+              <DosWindow title="O QUE VOCE PRECISA SABER">
                 <SimpleMarkdown text={mission.explanation_md} />
-              </section>
+              </DosWindow>
             )}
 
             {mission.concepts.length > 0 && (
@@ -153,7 +159,7 @@ export default async function MissionPage({
                 {mission.concepts.map((c) => (
                   <span
                     key={c}
-                    className="text-[11px] text-zinc-400 border border-zinc-800 rounded-full px-2.5 py-1"
+                    className="text-[11px] text-dos-cyan border border-dos-cyan px-2 py-0.5"
                   >
                     {c}
                   </span>
@@ -162,7 +168,7 @@ export default async function MissionPage({
             )}
           </div>
 
-          {/* WORKSPACE: editor + execução — coluna principal */}
+          {/* workspace */}
           <div className="min-w-0">
             <MissionWorkspace
               missionSlug={mission.slug}
@@ -174,12 +180,6 @@ export default async function MissionPage({
             />
           </div>
         </div>
-
-        {alreadyCompleted && (
-          <p className="mt-6 text-xs text-emerald-400/80">
-            ✓ você já concluiu esta missão
-          </p>
-        )}
       </main>
     </div>
   );

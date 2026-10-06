@@ -100,13 +100,13 @@ export default function AuthForm() {
   }
 
   const inputClass =
-    "w-full rounded border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-emerald-500/50 transition-colors";
-  const labelClass = "text-xs text-zinc-500 mb-1 block";
+    "w-full border-2 border-white bg-black px-3 py-2 text-sm text-dos-green placeholder:text-white/30 outline-none focus:border-dos-cyan";
+  const labelClass = "text-xs text-dos-cyan mb-1 block";
   const tabClass = (active: boolean) =>
     `flex-1 pb-3 pt-1 text-sm transition-colors ${
       active
-        ? "text-emerald-400 border-b-2 border-emerald-400"
-        : "text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent"
+        ? "text-dos-yellow border-b-4 border-dos-yellow"
+        : "text-white/60 hover:text-white border-b-4 border-transparent"
     }`;
 
   return (
@@ -197,26 +197,22 @@ export default function AuthForm() {
         </div>
 
         {error && (
-          <div className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400 leading-relaxed">
-            ✗ {error}
+          <div className="border-2 border-dos-red bg-black px-3 py-2 text-xs text-dos-red">
+            ERRO: {error}
           </div>
         )}
         {notice && (
-          <div className="rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400 leading-relaxed">
-            ✓ {notice}
+          <div className="border-2 border-dos-green bg-black px-3 py-2 text-xs text-dos-green">
+            OK: {notice}
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded bg-emerald-500 px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="border-2 border-dos-cyan px-3 py-2 text-sm text-dos-cyan hover:bg-dos-cyan hover:text-dos-blue disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          {loading
-            ? "processando..."
-            : mode === "login"
-              ? "entrar"
-              : "criar conta"}
+          [ {loading ? "processando..." : mode === "login" ? "entrar" : "criar conta"} ]
         </button>
       </form>
     </div>

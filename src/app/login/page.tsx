@@ -11,13 +11,13 @@ export default async function LoginPage() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-mono">
+    <div className="min-h-screen bg-dos-blue text-white">
       <TerminalHeader
-        right={<span className="text-xs text-zinc-500">acesso ao sistema</span>}
+        right={<span className="text-xs text-dos-cyan">ACESSO AO SISTEMA</span>}
       />
-      <main className="mx-auto max-w-5xl px-6 pt-16">
-        <p className="text-xs text-zinc-500 mb-6">
-          // autenticação necessária para registrar seu progresso, XP e streak
+      <main className="mx-auto max-w-md px-6 pt-16">
+        <p className="text-xs text-dos-yellow mb-6">
+          // autenticacao necessaria para registrar XP, nivel e streak
         </p>
         <AuthForm />
       </main>

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CodeEditor from "@/components/editor/CodeEditor";
+import DosButton from "@/components/ui/DosButton";
+import DosAlert from "@/components/ui/DosAlert";
+import DosBar from "@/components/ui/DosBar";
 import type { RunResult } from "@/types/database";
 
 interface CompleteResult {
@@ -18,8 +21,9 @@ interface CompleteResult {
 }
 
 /**
- * Workspace da missão: editor de código + painel de execução.
- * Quando todos os testes passam, grava o progresso no banco.
+ * Workspace da missão — estilo Turbo C.
+ * Janela de edição preta com moldura, menu de ações no rodapé,
+ * resultados em alert boxes DOS.
  */
 export default function MissionWorkspace({
   missionSlug,
@@ -50,18 +54,15 @@ export default function MissionWorkspace({
   const clampH = (h: number) => Math.min(MAX_H, Math.max(MIN_H, h));
   const [editorHeight, setEditorHeight] = useState(480);
 
-  // restaura preferência salva (client-only)
   useEffect(() => {
     const saved = window.localStorage.getItem("cq-editor-height");
     if (saved) setEditorHeight(clampH(parseInt(saved, 10) || 480));
   }, []);
 
-  // persiste a cada mudança
   useEffect(() => {
     window.localStorage.setItem("cq-editor-height", String(editorHeight));
   }, [editorHeight]);
 
-  // arrastar a borda inferior redimensiona
   function startDrag(e: React.MouseEvent) {
     e.preventDefault();
     const startY = e.clientY;
@@ -76,6 +77,18 @@ export default function MissionWorkspace({
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
   }
+
+  // Ctrl+Enter roda o código
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!running) handleRun();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   async function handleRun() {
     setRunning(true);
@@ -98,7 +111,6 @@ export default function MissionWorkspace({
       } else {
         setResult(data);
         if (data.status === "ok") {
-          // passou nos testes → registra progresso no banco
           await completeMission();
         }
       }
@@ -134,242 +146,224 @@ export default function MissionWorkspace({
   }
 
   const nextHintAvailable = hintLevel < hints.length;
+  const passedTests =
+    result?.tests.filter((t) => t.passed).length ?? 0;
+  const totalTests = result?.tests.length ?? 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* EDITOR */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden flex flex-col">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
-          <span className="h-3 w-3 rounded-full bg-red-500/80" />
-          <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-          <span className="h-3 w-3 rounded-full bg-green-500/80" />
-          <span className="ml-3 text-xs text-zinc-500">main.c</span>
-          <span className="ml-auto text-xs text-zinc-600">
-            {code.split("\n").length} linhas
+    <div className="space-y-4">
+      {/* ── EDITOR: janela preta com moldura dupla ─────────────── */}
+      <div className="relative border-2 border-white bg-black">
+        <div className="pointer-events-none absolute inset-[3px] border border-white" />
+
+        <div className="relative flex items-center gap-2 border-b border-white bg-dos-panel px-3 py-1.5">
+          <span className="text-xs text-dos-cyan">A:MAIN.C</span>
+          <span className="ml-auto text-xs text-white/60">
+            {code.split("\n").length} LN
           </span>
           {/* controles de altura */}
           <div className="ml-3 flex items-center gap-1">
             <button
-              title="diminuir editor"
+              title="diminuir"
               onClick={() => setEditorHeight(clampH(editorHeight - 100))}
-              className="h-6 w-6 rounded border border-zinc-700 text-zinc-400 text-xs hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
+              className="h-5 w-5 border border-white/50 text-[10px] text-white hover:bg-white hover:text-dos-blue transition-colors"
             >
-              −
+              -
             </button>
             <button
-              title="aumentar editor"
+              title="aumentar"
               onClick={() => setEditorHeight(clampH(editorHeight + 100))}
-              className="h-6 w-6 rounded border border-zinc-700 text-zinc-400 text-xs hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
+              className="h-5 w-5 border border-white/50 text-[10px] text-white hover:bg-white hover:text-dos-blue transition-colors"
             >
               +
             </button>
           </div>
         </div>
+
         <div style={{ height: editorHeight }} className="overflow-hidden">
           <CodeEditor value={code} onChange={setCode} height={`${editorHeight}px`} />
         </div>
+
         {/* alça de redimensionamento */}
         <div
           onMouseDown={startDrag}
-          className="group flex items-center justify-center h-4 cursor-row-resize border-t border-zinc-800 select-none"
+          className="flex h-3 cursor-row-resize items-center justify-center border-t border-white/30 select-none"
           title="arraste para redimensionar"
         >
-          <div className="h-0.5 w-10 rounded bg-zinc-700 group-hover:bg-emerald-500 transition-colors" />
+          <div className="h-0.5 w-10 bg-white/50" />
         </div>
-        <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between gap-3">
-          {running ? (
-            <span className="text-xs text-emerald-400 animate-pulse">
-              compilando e executando no sandbox...
-            </span>
-          ) : (
-            <span className="text-xs text-zinc-600">pronto para executar</span>
-          )}
-          <button
+
+        {/* menu de ações estilo barra F-keys do Turbo C */}
+        <div className="flex flex-wrap items-center gap-2 border-t-2 border-white bg-dos-panel px-3 py-2">
+          <DosButton
+            label={running ? "executando..." : "Rodar"}
             onClick={handleRun}
             disabled={running}
-            className={`shrink-0 rounded px-5 py-2 text-sm font-semibold text-zinc-950 transition-all ${
-              running
-                ? "bg-zinc-700 cursor-not-allowed opacity-70"
-                : "bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98]"
-            }`}
-          >
-            {running ? "⏳ executando..." : "▶ executar"}
-          </button>
+            tone="green"
+          />
+          {nextHintAvailable && (
+            <DosButton
+              label={`Dica ${hintLevel + 1}/${hints.length}`}
+              onClick={() => setHintLevel(hintLevel + 1)}
+              tone="yellow"
+            />
+          )}
+          {!nextHintAvailable && solutionCode && !showSolution && (
+            <DosButton
+              label="Ver Solucao"
+              onClick={() => setShowSolution(true)}
+              tone="plain"
+            />
+          )}
+          {running && (
+            <span className="text-xs text-dos-yellow dos-blink">
+              COMPILANDO NO SANDBOX...
+            </span>
+          )}
         </div>
       </div>
 
-      {/* PAINEL DE RESULTADO */}
-      <div className="space-y-4">
-        {!result && !running && (
-          <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-8 text-center">
-            <p className="text-xs text-zinc-500">
-              escreva sua solução no editor e clique em <span className="text-emerald-400">▶ executar</span>
-            </p>
-          </div>
-        )}
+      {/* ── RESULTADO ───────────────────────────────────────────── */}
+      {!result && !running && (
+        <div className="border-2 border-white/30 px-4 py-6 text-center">
+          <p className="text-xs text-white/50">
+            ESCREVA A SOLUCAO E APERTE [ RODAR ] — Ctrl+Enter tambem roda
+          </p>
+        </div>
+      )}
 
-        {running && (
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-8 text-center animate-pulse">
-            <p className="text-xs text-zinc-400">compilando e executando no sandbox...</p>
-          </div>
-        )}
-
-        {result && (
-          <div
-            className={`animate-fade-up rounded-lg border px-4 py-4 text-xs leading-relaxed ${
-              result.status === "ok"
-                ? "border-emerald-500/40 bg-emerald-500/10 animate-glow"
-                : result.status === "error"
-                  ? "border-zinc-700 bg-zinc-900"
-                  : "border-red-500/30 bg-red-500/5"
-            }`}
-          >
-            {result.status === "ok" && (
-              <div>
-                <p className="text-emerald-400 font-semibold text-sm">
-                  🎉 Sucesso! Todos os testes passaram.
-                </p>
-                {completion && (
-                  <div className="mt-2 space-y-1">
-                    {completion.already_completed ? (
-                      <p className="text-zinc-400">
-                        Você já havia concluído esta missão — sem XP extra.
+      {result && (
+        <div className="space-y-3">
+          {/* sucesso */}
+          {result.status === "ok" && (
+            <DosAlert kind="success" title="COMPILADO COM SUCESSO">
+              <p>TODOS OS TESTES PASSARAM.</p>
+              {completion && (
+                <div className="mt-2 space-y-1">
+                  {completion.already_completed ? (
+                    <p className="text-white/70">
+                      MISSAO JA CONCLUIDA ANTERIORMENTE — SEM XP EXTRA.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-dos-yellow">
+                        +{completion.xp_gained} XP
+                        {completion.bonus_hint_free && " (BONUS: SEM DICAS)"}
                       </p>
-                    ) : (
-                      <>
-                        <p className="text-amber-300">
-                          +{completion.xp_gained} XP
-                          {completion.bonus_hint_free && (
-                            <span className="text-zinc-400">
-                              {" "}
-                              (inclui +20 por não usar dicas)
-                            </span>
-                          )}
+                      {completion.leveled_up && (
+                        <p className="text-dos-green">
+                          LEVEL UP — NIVEL {completion.level} ATINGIDO.
                         </p>
-                        {completion.leveled_up && (
-                          <p className="text-emerald-300 font-semibold">
-                            ⬆️ LEVEL UP! Agora você é nível {completion.level}.
-                          </p>
-                        )}
-                        {completion.streak_days ? (
-                          <p className="text-amber-400/80">
-                            🔥 streak: {completion.streak_days}{" "}
-                            {completion.streak_days === 1 ? "dia" : "dias"}
-                          </p>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                )}
-                {!loggedIn && (
-                  <p className="text-zinc-500 mt-2 text-[11px]">
-                    entre com sua conta para registrar XP nesta missão
-                  </p>
-                )}
-              </div>
-            )}
+                      )}
+                      {completion.streak_days ? (
+                        <p className="text-dos-red">
+                          STREAK: {completion.streak_days}{" "}
+                          {completion.streak_days === 1 ? "DIA" : "DIAS"}
+                        </p>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              )}
+              {!loggedIn && (
+                <p className="mt-2 text-xs text-white/50">
+                  ENTRE COM SUA CONTA PARA REGISTRAR XP NESTA MISSAO
+                </p>
+              )}
+            </DosAlert>
+          )}
 
-            {result.status !== "ok" && (
-              <div className="space-y-3">
-                {result.friendly_error && (
-                  <p className="text-zinc-200">🔎 {result.friendly_error}</p>
-                )}
+          {/* erro (infra) */}
+          {result.status === "error" && (
+            <DosAlert kind="error" title="ERRO DO SISTEMA">
+              <p>{result.friendly_error ?? "Erro inesperado."}</p>
+            </DosAlert>
+          )}
 
-                {result.stdout && (
-                  <div>
-                    <p className="text-zinc-500 mb-1">saída do programa:</p>
-                    <pre className="rounded bg-zinc-950 border border-zinc-800 p-3 overflow-x-auto text-zinc-300">
-                      {result.stdout}
-                    </pre>
-                  </div>
-                )}
+          {/* erro de compilação */}
+          {result.status === "compile_error" && (
+            <DosAlert kind="error" title="ERRO DE COMPILACAO">
+              {result.friendly_error && (
+                <p className="mb-2 text-white">{result.friendly_error}</p>
+              )}
+              <details>
+                <summary className="cursor-pointer text-xs text-white/60 hover:text-white">
+                  VER SAIDA TECNICA DO GCC
+                </summary>
+                <pre className="mt-2 overflow-x-auto border border-dos-red/50 bg-black p-2 text-[11px] text-dos-red">
+                  {result.stderr}
+                </pre>
+              </details>
+            </DosAlert>
+          )}
 
-                {result.stderr && result.status !== "error" && (
-                  <details>
-                    <summary className="text-zinc-500 cursor-pointer hover:text-zinc-300">
-                      ver saída técnica do compilador
-                    </summary>
-                    <pre className="mt-2 rounded bg-zinc-950 border border-zinc-800 p-3 overflow-x-auto text-red-400/80">
-                      {result.stderr}
-                    </pre>
-                  </details>
-                )}
+          {/* runtime / timeout / wrong answer */}
+          {(result.status === "runtime_error" ||
+            result.status === "timeout" ||
+            result.status === "wrong_answer") && (
+            <DosAlert
+              kind={result.status === "wrong_answer" ? "warning" : "error"}
+              title={
+                result.status === "timeout"
+                  ? "TEMPO ESGOTADO"
+                  : result.status === "wrong_answer"
+                    ? "SAIDA INCORRETA"
+                    : "ERRO EM TEMPO DE EXECUCAO"
+              }
+            >
+              {result.friendly_error && (
+                <p className="mb-2 text-white">{result.friendly_error}</p>
+              )}
+              {result.stdout && (
+                <pre className="mb-2 overflow-x-auto border border-white/30 bg-black p-2 text-[11px] text-dos-green">
+                  {result.stdout}
+                </pre>
+              )}
+              {result.stderr && (
+                <details>
+                  <summary className="cursor-pointer text-xs text-white/60 hover:text-white">
+                    VER SAIDA TECNICA
+                  </summary>
+                  <pre className="mt-2 overflow-x-auto border border-white/20 bg-black p-2 text-[11px] text-dos-red">
+                    {result.stderr}
+                  </pre>
+                </details>
+              )}
+            </DosAlert>
+          )}
 
-                {/* testes individuais */}
-                {result.tests.length > 0 && (
-                  <div className="space-y-2">
-                    {result.tests.map((t, i) => (
-                      <div
-                        key={i}
-                        className={`rounded border px-3 py-2 ${
-                          t.passed
-                            ? "border-emerald-500/30 bg-emerald-500/5"
-                            : "border-red-500/30 bg-red-500/5"
-                        }`}
-                      >
-                        <span className={t.passed ? "text-emerald-400" : "text-red-400"}>
-                          {t.passed ? "✓" : "✗"} {t.label}
-                        </span>
-                        {!t.passed && t.expected_output !== undefined && (
-                          <div className="mt-2 grid grid-cols-2 gap-2 text-zinc-400">
-                            <div>
-                              <p className="text-zinc-500 mb-1">esperado:</p>
-                              <pre className="bg-zinc-950 border border-zinc-800 rounded p-2 whitespace-pre-wrap">
-                                {t.expected_output}
-                              </pre>
-                            </div>
-                            <div>
-                              <p className="text-zinc-500 mb-1">seu programa:</p>
-                              <pre className="bg-zinc-950 border border-zinc-800 rounded p-2 whitespace-pre-wrap">
-                                {t.actual_output || "(sem saída)"}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+          {/* testes individuais */}
+          {totalTests > 0 && (
+            <DosBar
+              value={passedTests}
+              max={totalTests}
+              width={24}
+              tone={passedTests === totalTests ? "green" : "yellow"}
+            />
+          )}
 
-                {/* dicas progressivas (§7) */}
-                {hints.length > 0 && (
-                  <div className="pt-3 border-t border-zinc-800/60">
-                    {hints.slice(0, hintLevel).map((h, i) => (
-                      <p key={i} className="text-zinc-300 mb-2">
-                        💡 <span className="text-amber-400">Dica {i + 1}:</span> {h.content}
-                      </p>
-                    ))}
-                    {nextHintAvailable ? (
-                      <button
-                        onClick={() => setHintLevel(hintLevel + 1)}
-                        className="text-amber-400 border border-amber-500/30 rounded px-3 py-1.5 hover:bg-amber-500/10 transition-colors"
-                      >
-                        💡 pedir dica ({hintLevel}/{hints.length})
-                      </button>
-                    ) : (
-                      <div>
-                        {solutionCode && !showSolution && (
-                          <button
-                            onClick={() => setShowSolution(true)}
-                            className="text-zinc-400 border border-zinc-700 rounded px-3 py-1.5 hover:text-zinc-200 transition-colors"
-                          >
-                            👁️ ver solução
-                          </button>
-                        )}
-                        {showSolution && solutionCode && (
-                          <pre className="mt-3 rounded bg-zinc-950 border border-zinc-800 p-3 overflow-x-auto text-zinc-400">
-                            {solutionCode}
-                          </pre>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          {/* dicas reveladas */}
+          {hintLevel > 0 && (
+            <div className="border-2 border-dos-yellow/60 bg-black/40 p-3">
+              {hints.slice(0, hintLevel).map((h, i) => (
+                <p key={i} className="text-xs text-dos-yellow mb-2">
+                  [DICA {i + 1}] {h.content}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* solução */}
+          {showSolution && solutionCode && (
+            <div className="border-2 border-white/40 bg-black p-3">
+              <p className="mb-2 text-xs text-white/60">SOLUCAO DE REFERENCIA:</p>
+              <pre className="overflow-x-auto text-[11px] text-dos-green">
+                {solutionCode}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
