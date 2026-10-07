@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import LogoutButton from "@/components/auth/LogoutButton";
 
 const features = [
   {
@@ -33,26 +35,49 @@ const features = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <div className="min-h-screen bg-dos-blue text-white">
       <header className="border-b-2 border-white bg-dos-panel">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2">
           <span className="text-sm tracking-widest text-dos-cyan">CODEQUEST</span>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
-            >
-              [ mapa ]
-            </Link>
-            <Link
-              href="/login"
-              className="text-xs text-dos-yellow border-2 border-dos-yellow px-3 py-1 hover:bg-dos-yellow hover:text-dos-blue transition-colors"
-            >
-              [ entrar ]
-            </Link>
-          </div>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
+              >
+                [ mapa ]
+              </Link>
+              <Link
+                href="/perfil"
+                className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
+              >
+                [ perfil ]
+              </Link>
+              <LogoutButton />
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
+              >
+                [ mapa ]
+              </Link>
+              <Link
+                href="/login"
+                className="text-xs text-dos-yellow border-2 border-dos-yellow px-3 py-1 hover:bg-dos-yellow hover:text-dos-blue transition-colors"
+              >
+                [ entrar ]
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 
@@ -108,8 +133,10 @@ int main() {
           </div>
         </section>
 
-        <p className="mt-12 text-center text-xs text-dos-cyan dos-blink">
-          PRONTO? APERTE [ INICIAR ] NO LOGIN
+        <p className={`mt-12 text-center text-xs ${user ? "text-dos-green" : "text-dos-cyan dos-blink"}`}>
+          {user
+            ? "SESSAO ATIVA — BOM ESTUDO, OPERADOR."
+            : "PRONTO? APERTE [ INICIAR ] NO LOGIN"}
         </p>
       </main>
 

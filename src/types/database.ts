@@ -41,6 +41,7 @@ export type World = {
   slug: string;
   title: string;
   description: string | null;
+  briefing_md: string | null;
   required_missions: number;
   required_boss: boolean;
   sort_order: number;
@@ -54,6 +55,7 @@ export type Mission = {
   title: string;
   activity: ActivityType;
   difficulty: Difficulty;
+  briefing_md: string | null;
   context_text: string | null;
   objective_text: string | null;
   explanation_md: string | null;

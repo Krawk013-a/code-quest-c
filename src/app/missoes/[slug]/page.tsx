@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import TerminalHeader from "@/components/ui/TerminalHeader";
 import LogoutButton from "@/components/auth/LogoutButton";
 import DosWindow from "@/components/ui/DosWindow";
+import SimpleMarkdown from "@/components/ui/SimpleMarkdown";
 import MissionWorkspace from "@/components/mission/MissionWorkspace";
 
 const ACTIVITY_LABEL: Record<string, string> = {
@@ -12,39 +13,6 @@ const ACTIVITY_LABEL: Record<string, string> = {
   boss: "BOSS",
   project: "PROJETO",
 };
-
-/** Renderiza markdown mínimo: **negrito**, `código`, quebras de linha */
-function SimpleMarkdown({ text }: { text: string }) {
-  const lines = text.split("\n");
-  return (
-    <div className="space-y-1">
-      {lines.map((line, i) => {
-        const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
-        return (
-          <p key={i} className="text-xs text-white/90 leading-relaxed">
-            {parts.map((part, j) => {
-              if (part.startsWith("**") && part.endsWith("**")) {
-                return (
-                  <strong key={j} className="text-dos-yellow">
-                    {part.slice(2, -2)}
-                  </strong>
-                );
-              }
-              if (part.startsWith("`") && part.endsWith("`")) {
-                return (
-                  <code key={j} className="text-dos-green bg-black px-1">
-                    {part.slice(1, -1)}
-                  </code>
-                );
-              }
-              return <span key={j}>{part}</span>;
-            })}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
 
 export default async function MissionPage({
   params,
@@ -61,7 +29,7 @@ export default async function MissionPage({
   const { data: mission } = await supabase
     .from("missions")
     .select(
-      `id, world_id, slug, title, activity, difficulty, context_text, objective_text,
+      `id, world_id, slug, title, activity, difficulty, briefing_md, context_text, objective_text,
        explanation_md, initial_code, solution_code, tests, hints, xp_reward,
        concepts`
     )
@@ -150,6 +118,12 @@ export default async function MissionPage({
         <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
           {/* contexto + objetivo + explicação */}
           <div className="space-y-6 xl:max-h-[calc(100vh-220px)] xl:overflow-y-auto xl:pr-1">
+            {mission.briefing_md && (
+              <DosWindow title="O QUE VOCE VAI APRENDER">
+                <SimpleMarkdown text={mission.briefing_md} size="sm" />
+              </DosWindow>
+            )}
+
             {mission.context_text && (
               <DosWindow title="CONTEXTO">
                 <SimpleMarkdown text={mission.context_text} />

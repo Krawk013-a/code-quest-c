@@ -5,6 +5,7 @@ import TerminalHeader from "@/components/ui/TerminalHeader";
 import LogoutButton from "@/components/auth/LogoutButton";
 import DosWindow from "@/components/ui/DosWindow";
 import DosBar from "@/components/ui/DosBar";
+import SimpleMarkdown from "@/components/ui/SimpleMarkdown";
 
 /** Mapa de tipo de atividade para o estilo DOS */
 const ACTIVITY_TAG: Record<string, { label: string; color: string }> = {
@@ -28,7 +29,7 @@ export default async function WorldPage({
 
   const { data: world } = await supabase
     .from("worlds")
-    .select("id, number, slug, title, description, required_missions, required_boss")
+    .select("id, number, slug, title, description, briefing_md, required_missions, required_boss")
     .eq("slug", slug)
     .single();
   if (!world) notFound();
@@ -92,6 +93,14 @@ export default async function WorldPage({
           title={`MUNDO ${world.number} — ${world.title.toUpperCase()}`}
           className="mb-8"
         >
+          {world.briefing_md && (
+            <div className="mb-4 border-b border-white/20 pb-4">
+              <p className="mb-2 text-[11px] text-dos-cyan">
+                // BRIEFING — O QUE VEM A SEGUIR
+              </p>
+              <SimpleMarkdown text={world.briefing_md} size="sm" />
+            </div>
+          )}
           <p className="text-sm mb-3">{world.description}</p>
           {user && totalMissions > 0 && (
             <div className="text-xs">

@@ -50,7 +50,17 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-dos-blue text-white">
       <TerminalHeader
-        right={<LogoutButton />}
+        right={
+          <>
+            <Link
+              href="/perfil"
+              className="text-xs text-white/70 hover:text-dos-cyan transition-colors"
+            >
+              [ perfil ]
+            </Link>
+            <LogoutButton />
+          </>
+        }
         status={
           <span>
             <span className="text-dos-yellow">NIVEL {level}</span>
